@@ -2,6 +2,24 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
+const knex = require('knex')
+
+const db = knex({
+    client: 'pg',
+    connection: {
+      host : '127.0.0.1',
+      user : 'postgres',
+      password : '2c51fc2ac7331f8f597f',
+      database : 'smart-brain'
+    }
+});
+
+
+db.select('*')
+.from('users').withSchema('public')
+.then((data) => {
+    console.log(data);
+});
 
 const app = express();
 
@@ -51,14 +69,12 @@ app.post('/signin', (req,res) => {
 })
 
 app.post('/register', (req,res) => {
-    const { email, name } = req.body;
-    database.users.push({
-            id: '125',
-            name: name,
-            email: email,
-            entries: 0,
-            joined: new Date()
-    })
+    const { email, name, password } = req.body;
+   db('users').insert({
+       email: email,
+       name: name,
+       joined: new Date()
+   }).then(console.log)
     res.json(database.users[database.users.length-1]);
 })
 
@@ -107,3 +123,25 @@ app.listen(3000,() => {
     console.log('app is running on port 3000');
 })
 
+/*
+Setting up the database #302 
+
+1.
+
+CREATE TABLE users (
+    id serial PRIMARY KEY,
+    name VARCHAR(100),
+    email text UNIQUE NOT NULL,
+    entries BIGINT DEFAULT 0,
+    joined TIMESTAMP NOT NULL
+);
+
+2.
+
+CREATE TABLE login (
+    id serial PRIMARY KEY,
+    hash varchar(100) NOT NULL,
+    email text UNIQUE NOT NULL
+)
+
+*/
